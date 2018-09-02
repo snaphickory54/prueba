@@ -5,6 +5,7 @@ import {ListaService} from '../../services/lista.service';
 import {ActividadesService} from '../../services/actividades.service';
 import {EstadoService} from '../../services/estado.service';
 import {EtiquetaService} from '../../services/etiqueta.service';
+import { Observable } from 'rxjs/Rx';
 
 @Component({
   selector: 'app-protegida',
@@ -31,6 +32,8 @@ export class ProtegidaComponent implements OnInit {
   estadoCrearPanel:any = [];
   etiquetaCrearPanel:any = [];
   estadoDeCreado = false;
+  promesas:any = [];
+  promesasUsuarios:any = [];
   public actividad:any;
   public lista:any;
 
@@ -113,12 +116,13 @@ export class ProtegidaComponent implements OnInit {
   
    cargar($id){
     this.idLista=$id;
+    this.mostrar = true;
+    this.crear = false;
+    this.crearLista = false;
     this.listaService.getActividades($id).subscribe( data => {
 
       if(data[0].empty != 'true'){
-        this.mostrar = true;
-        this.crear = false;
-        this.crearLista = false;
+
         this.listaActividades = data;
       this.getEstado();
       this.getEtiquetas();
@@ -130,6 +134,131 @@ export class ProtegidaComponent implements OnInit {
 
     });
   }
+
+  
+  getColaboradores(){
+    let promesa;
+    let usuario;
+    this.listaColaboradores = [];
+    this.actividadesUsuarios = [];
+    let compare =0;
+    let result = 0;
+    let texto = '';
+    let _q=0;
+
+   
+    try{
+    for (var _i = 0; _i < this.listaActividades.length; _i++){
+     promesa = this.actividades.getColaboradores(this.listaActividades[_i].id);
+      
+      this.promesas.push(promesa);
+     
+    }
+  }finally{
+    Observable.forkJoin(this.promesas).subscribe( data => {
+      console.log(data);
+      this.listaColaboradores = new Array(Object.keys(data).length);
+    try{
+  for (var _j = 0; _j < Object.keys(data).length; _j++){
+
+    if(Object.keys(data[_j]).length < 2){
+
+     if(data[_j][0].empty){
+        this.listaColaboradores[_j] = 'sin asignar';
+
+     }else{
+
+      usuario = this.actividades.getUsuarios(data[_j][0].id_usuario);
+      this.promesasUsuarios.push(usuario);
+    }
+
+    }else{
+
+
+      for (var _h = 0; _h < Object.keys(data[_j]).length; _h++){  
+        usuario = this.actividades.getUsuarios(data[_j][_h].id_usuario);
+        this.promesasUsuarios.push(usuario);
+      }
+    }
+ }
+
+}finally{
+  Observable.forkJoin(this.promesasUsuarios).subscribe( dataUsuario => {
+    console.log(dataUsuario);
+  let numbersArrays = [];
+  for (var _m = 0; _m < data.length; _m++){  
+    if(this.listaColaboradores[_m] == null){
+      numbersArrays.push([_m]);
+    }//finalIf
+  }
+
+  for (var _n = 0; _n < data.length; _n++){
+
+    for (var _x = 0; _x < Object.keys(dataUsuario).length; _x++){  
+      if(Object.keys(data[_n]).length < 2){
+
+        if(data[_n][0].empty != 'true'){
+
+          if(data[_n][0]['id_usuario'] == dataUsuario[_x]['id']){
+            this.listaColaboradores[_n] = dataUsuario[_x]['nombre'];
+
+          }
+  
+      }
+      }else{
+        if(Object.keys(data[_n]).length >= 2){
+
+        if(data[_n][0].empty != 'true'){
+      for (var _z = 0; _z < Object.keys(data[_n]).length; _z++){
+            if(_q == dataUsuario.length) _q=0;
+
+            if(data[_n][_z]['id_usuario'] == dataUsuario[_q]['id']){
+              compare++;
+              if(compare == Object.keys(data[_n]).length){
+                texto = texto+dataUsuario[_q]['nombre'];
+                this.listaColaboradores[_n] = texto;
+               /*  console.log(data[_n][_z]);
+                console.log('valor: '+compare);
+                console.log('length data:' +Object.keys(data[_n]).length); */
+                compare = 0;
+                texto = '';
+                result++;
+                _z = Object.keys(data[_n]).length;
+                _x = dataUsuario.length;
+              }else{
+                texto = texto+dataUsuario[_q]['nombre']+', ';
+                this.listaColaboradores[_n] = texto;
+              }
+
+              //console.log(dataUsuario[_q]);
+              _q=0;
+            }
+            
+            _q++;
+           }
+          
+      }
+    }
+
+      }//final else
+      
+    }//final _x
+
+ }//finalfor
+
+  //final
+  });
+}
+
+    });//finalForkjoin
+
+
+  }//final for
+
+
+
+
+}
 
   crearActividad(){
     this.crear = true;
@@ -159,26 +288,6 @@ export class ProtegidaComponent implements OnInit {
   
     }
 
-    getColaboradores(){
-
-      this.listaColaboradores = [];
-      this.actividadesUsuarios = [];
-      for (var _i = 0; _i < this.listaActividades.length; _i++){
-        this.actividades.getColaboradores(this.listaActividades[_i].id).subscribe( data => {
-          //this.etiquetas.push(data);
-          this.listaColaboradores.push(data);
-
-
-      });
-    
-      }
-    
-      for (let item of this.listaColaboradores) {
-        this.listaFinalColaboradores.push(item);
-        console.log(this.listaFinalColaboradores);
-      }
-
-}
 
 getEstadoCrear(){
 this.estadoService.getEstado().subscribe( data => {
