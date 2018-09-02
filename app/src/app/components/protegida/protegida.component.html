@@ -1,0 +1,87 @@
+<div class="row">
+
+<div class="col-md-4">
+  <ul class="list-group">
+    <li class="list-group-item" style="Color:white;background-color:black;">Listas</li>
+    <li class="list-group-item" *ngFor="let items of listaUsuario; let i = index" (click)="cargar(items.id)" >{{items.nombre}}</li>
+    <li class="list-group-item" (click)="crearListaForm()">Crear Lista</li>
+  </ul>
+</div>
+
+<div class="col-md-8">
+
+
+<table class="table" *ngIf = "listaActividades && !crear && !crearLista">
+  <thead class="thead-dark">
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Nombre</th>
+      <th scope="col">Estado</th>
+      <th scope="col">Encargados</th>
+      <th scope="col">Etiqueta</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let actividades of listaActividades; let i = index"  >
+      <th scope="row">{{i+1}}</th>
+      <td>{{actividades.nombre}}</td>
+      <td>{{estado[i].nombre}}</td>
+      <td>@mdo</td>
+      <td>{{etiquetas[i].nombre}}</td>
+    </tr>
+    </tbody>
+    </table>
+
+    <form *ngIf = "crear" [formGroup]="forma" (ngSubmit)="crearData()" novalidate="novalidate">
+        <div class="form-group">
+          <label for="exampleFormControlInput1">Nombre</label>
+          <input type="text" class="form-control" formControlName="nombre" >
+          <div *ngIf="!forma.controls['nombre'].valid && forma.controls['nombre'].touched" class="form-control-feedback">
+              El nombre es requerido
+            </div>
+        </div>
+        <div class="form-group">
+          <label for="exampleFormControlSelect1">Estado</label>
+          <select class="form-control" id="exampleFormControlSelect1" formControlName="estado">
+            <option *ngFor="let estados of estadoCrearPanel; let i = index" value="{{estados.id}}">{{estados.nombre}}</option>
+          </select>
+        </div>
+        <div class="form-group">
+            <label for="exampleFormControlSelect1">Etiqueta</label>
+            <select class="form-control" id="exampleFormControlSelect1" formControlName="etiqueta">
+                <option *ngFor="let etiquetas of etiquetaCrearPanel; let i = index" value="{{etiquetas.id}}">{{etiquetas.nombre}}</option>
+            </select>
+          </div>
+        <div class="form-group">
+          <label for="exampleFormControlTextarea1">Fecha</label>
+          <input type="date" class="form-control" formControlName="date" >
+          <div *ngIf="!forma.controls['date'].valid && forma.controls['date'].touched" class="form-control-feedback">
+              La fecha es requerida
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Crear</button>
+      </form>
+
+    <form *ngIf = "crearLista" [formGroup]="formaList" (ngSubmit)="crearListaPost()" novalidate="novalidate">
+        <div class="form-group">
+          <label for="exampleFormControlInput1">Nombre</label>
+          <input type="text" class="form-control" formControlName="nombre" >
+          <div *ngIf="!forma.controls['nombre'].valid && forma.controls['nombre'].touched" class="form-control-feedback">
+              El nombre es requerido
+            </div>
+        </div>
+    
+
+        <button type="submit" class="btn btn-primary">Crear</button>
+      </form>
+
+    <div class="col-md-3" *ngIf = "mostrar"><button type="button" style="float:right;" class="btn btn-dark" (click)="crearActividad()">Agregar Actividad</button></div>
+
+</div>
+
+
+
+
+
+</div>
